@@ -13,6 +13,7 @@ function jwt() {
             '/users/register'
         ]
     });
+    
 }
 
 async function isRevoked(req, payload, done) {
@@ -22,6 +23,7 @@ async function isRevoked(req, payload, done) {
     if (!user) {
         return done(null, true);
     }
-
+    currentUser=user;
+    console.log(currentUser,"currentUser2");
     done();
 };

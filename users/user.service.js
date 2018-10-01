@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 const db = require('_helpers/db');
 const User = db.User;
 const Event = db.Event;
+// var currentUser;
+// console.log(currentUser);
 
 
 module.exports = {
@@ -20,9 +22,12 @@ module.exports = {
 
 async function authenticate({ username, password }) {
     const user = await User.findOne({ username });
+    currentUser=user;
+    console.log("currentUser",currentUser);
     if (user && bcrypt.compareSync(password, user.hash)) {
         const { hash, ...userWithoutHash } = user.toObject();
         const token = jwt.sign({ sub: user.id }, config.secret);
+
         return {
             ...userWithoutHash,
             token
@@ -33,8 +38,10 @@ async function authenticate({ username, password }) {
 async function getAll() {
     return await User.find().select('-hash');
 }
-async function getAllEvents() {
-    return await Event.find().select();
+async function getAllEvents(currentUser) {
+    console.log("1",{currentUser})
+    // User.find({ nameFirst: 'John' });
+    return await Event.find({ user: currentUser._id }).select();
 }
 
 async function getById(id) {
@@ -62,11 +69,14 @@ async function createEvent(eventParam) {
     // if (await User.findOne({ username: userParam.username })) {
     //     throw 'Username "' + userParam.username + '" is already taken';
     // }
-
+    console.log({currentUser});
     const event = new Event(eventParam);
-
+    event.user=currentUser._id;
+    // console.log({eventParam});
+    console.log({event});
   
     // save event
+    // return;
     return await event.save();
 }
 

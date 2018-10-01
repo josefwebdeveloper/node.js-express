@@ -39,7 +39,7 @@ function getAll(req, res, next) {
         .catch(err => next(err));
 }
 function getAllEvents(req, res, next) {
-    userService.getAllEvents()
+    userService.getAllEvents(currentUser)
         .then(events => res.json(events))
         .catch(err => next(err));
 }
