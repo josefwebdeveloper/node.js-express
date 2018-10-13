@@ -17,16 +17,28 @@ module.exports = {
     delete: _delete,
     deleteEvent: _deleteEvent,
     createEvent,
-    getAllEvents
+    getAllEvents,
+    authenticateGoogle
+
 };
 
-async function authenticate({ username, password }) {
-    const user = await User.findOne({ username });
-    currentUser=user;
-    console.log("currentUser",currentUser);
+async function authenticate({
+    username,
+    password
+}) {
+    const user = await User.findOne({
+        username
+    });
+    currentUser = user;
+    console.log("currentUser", currentUser);
     if (user && bcrypt.compareSync(password, user.hash)) {
-        const { hash, ...userWithoutHash } = user.toObject();
-        const token = jwt.sign({ sub: user.id }, config.secret);
+        const {
+            hash,
+            ...userWithoutHash
+        } = user.toObject();
+        const token = jwt.sign({
+            sub: user.id
+        }, config.secret);
 
         return {
             ...userWithoutHash,
@@ -34,23 +46,76 @@ async function authenticate({ username, password }) {
         };
     }
 }
+// username, provider,image,token,name 
+async function authenticateGoogle(userParam) {
+
+    console.log({
+        userParam
+    });
+    const user = await User.findOne({
+        username: userParam.username
+    });
+    if (!user) {
+
+        const user = new User(userParam);
+
+
+        // save user
+        await user.save();
+        currentUser = user;
+        console.log("currentUser", currentUser);
+        // if (user && bcrypt.compareSync(password, user.hash)) {
+        // const user  = user.toObject();
+        const token = jwt.sign({
+            sub: user.id
+        }, config.secret);
+        console.log("token", token);
+        return {
+            // ...userWithoutHash
+            user,
+            token
+        };
+    } else {
+        currentUser = user;
+        console.log("currentUser", currentUser);
+        // if (user && bcrypt.compareSync(password, user.hash)) {
+        // const user  = user.toObject();
+        const token = jwt.sign({
+            sub: user.id
+        }, config.secret);
+        console.log("token", token);
+        return {
+            // ...userWithoutHash
+            user,
+            token
+        };
+    }
+
+    // }
+}
 
 async function getAll() {
     return await User.find().select('-hash');
 }
 async function getAllEvents(currentUser) {
-    console.log("1",{currentUser})
+    console.log("1", currentUser._id);
     // User.find({ nameFirst: 'John' });
-    return await Event.find({ user: currentUser._id }).select();
+    return await Event.find({
+        user: currentUser._id
+    }).select();
 }
 
 async function getById(id) {
+    // if()
     return await User.findById(id).select('-hash');
 }
 
 async function create(userParam) {
+    console.log(userParam);
     // validate
-    if (await User.findOne({ username: userParam.username })) {
+    if (await User.findOne({
+            username: userParam.username
+        })) {
         throw 'Username "' + userParam.username + '" is already taken';
     }
 
@@ -64,17 +129,22 @@ async function create(userParam) {
     // save user
     await user.save();
 }
+
 async function createEvent(eventParam) {
     // validate
     // if (await User.findOne({ username: userParam.username })) {
     //     throw 'Username "' + userParam.username + '" is already taken';
     // }
-    console.log({currentUser});
+    console.log({
+        currentUser
+    });
     const event = new Event(eventParam);
-    event.user=currentUser._id;
+    event.user = currentUser._id;
     // console.log({eventParam});
-    console.log({event});
-  
+    console.log({
+        event
+    });
+
     // save event
     // return;
     return await event.save();
@@ -85,7 +155,9 @@ async function update(id, userParam) {
 
     // validate
     if (!user) throw 'User not found';
-    if (user.username !== userParam.username && await User.findOne({ username: userParam.username })) {
+    if (user.username !== userParam.username && await User.findOne({
+            username: userParam.username
+        })) {
         throw 'Username "' + userParam.username + '" is already taken';
     }
 

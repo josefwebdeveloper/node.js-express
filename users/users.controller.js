@@ -4,6 +4,7 @@ const userService = require('./user.service');
 
 // routes
 router.post('/authenticate', authenticate);
+router.post('/authenticate/google', authenticateGoogle);
 router.post('/register', register);
 router.post('/event', createEvent);
 router.get('/', getAll);
@@ -19,6 +20,11 @@ module.exports = router;
 function authenticate(req, res, next) {
     userService.authenticate(req.body)
         .then(user => user ? res.json(user) : res.status(400).json({ message: 'Username or password is incorrect' }))
+        .catch(err => next(err));
+}
+function authenticateGoogle(req, res, next) {
+    userService.authenticateGoogle(req.body)
+        .then(user => user ? res.json(user) : res.json(user))
         .catch(err => next(err));
 }
 
@@ -39,6 +45,7 @@ function getAll(req, res, next) {
         .catch(err => next(err));
 }
 function getAllEvents(req, res, next) {
+    console.log("currentUser",currentUser);
     userService.getAllEvents(currentUser)
         .then(events => res.json(events))
         .catch(err => next(err));
